@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <stack>
-#include <list>
 #include <queue>
 #include <string>
 
