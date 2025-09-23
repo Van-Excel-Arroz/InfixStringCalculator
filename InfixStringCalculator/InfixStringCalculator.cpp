@@ -57,7 +57,7 @@ int main()
 {
 	std::queue<std::string> postfix;
 	std::stack<char> operators;
-	std::string infix = "2 * 3 * 4";
+	std::string infix = "(2 + 2) / 2";
 	std::string currentNumber = "";
 
 	std::cout << "Infix String: " << infix << "\n\n";
@@ -74,12 +74,11 @@ int main()
 				postfix.push(currentNumber);
 				currentNumber = "";
 			}
-
 			if (!operators.empty() && operators.top() == '*') {
 				operators.push(c);
 			}
 			else {
-				operators.push('*');
+				if (!postfix.empty()) operators.push('*');
 				operators.push(c);
 			}
 		}
