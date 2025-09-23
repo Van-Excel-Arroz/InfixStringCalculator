@@ -4,7 +4,6 @@
 #include <queue>
 #include <string>
 
-
 void printPostfixString(std::queue<std::string> postfix) {
 	std::cout << "Postfix String: ";
 	
@@ -45,6 +44,8 @@ int getPrecedenceOrder(char _operator) {
 		return 2;
 	case '/':
 		return 2;
+	case '(': 
+		return 3;
 	}
 }
 
@@ -52,7 +53,7 @@ int main()
 {
 	std::queue<std::string> postfix;
 	std::stack<char> operators;
-	std::string infix = "24 + 4 / 2";
+	std::string infix = "2 (6 - 4 * 1) / 2";
 	std::string currentNumber = "";
 
 	std::cout << "Infix String: " << infix << "\n\n";
@@ -64,27 +65,51 @@ int main()
 			currentNumber += c;
 			continue;
 		}
-		if (c == '+' || c == '-' || c == '*'|| c == '/') {
+		if (c == '(') {
+			postfix.push(currentNumber);
+			currentNumber = "";
+			if (!operators.empty() && operators.top() == '*') {
+				operators.push(c);
+			}
+			else {
+				operators.push('*');
+				operators.push(c);
+			}
+		}
+		if (c == ')') {
 			postfix.push(currentNumber);
 			currentNumber = "";
 			std::string parsedOperator;
+			
+			while (operators.top() != '(') {
+				parsedOperator += operators.top();
+				postfix.push(parsedOperator);
+				operators.pop();
+				parsedOperator = "";
+			}
+			operators.pop(); // remove '(' from operators stack
+		}
+		if (c == '+' || c == '-' || c == '*'|| c == '/') {
+			if (currentNumber != "") {
+				postfix.push(currentNumber);
+				currentNumber = "";
+			}
+
 			char currentOperator = c;
 
 			if (operators.empty()) {
 				operators.push(currentOperator);
 			} 
 			else if (getPrecedenceOrder(currentOperator) <= getPrecedenceOrder(operators.top())) {
+				if (operators.top() == '(') {
+					operators.push(currentOperator);
+					continue;
+				}
+
+				std::string parsedOperator;
 				parsedOperator += operators.top();
 				operators.pop();
 				postfix.push(parsedOperator);
-
-				if (getPrecedenceOrder(currentOperator) == getPrecedenceOrder(operators.top())) {
-					parsedOperator = "";
-					parsedOperator += operators.top();
-					operators.pop();
-					postfix.push(parsedOperator);
-				}
-
 				operators.push(currentOperator);
 			}
 			else if (getPrecedenceOrder(currentOperator) > getPrecedenceOrder(operators.top())) {
@@ -105,12 +130,14 @@ int main()
 
 
 	std::stack<std::string> numbers;
+	std::cout << "Evaluating the postfix string calculation: \n\n";
 
 	while (!postfix.empty()) {
 		std::string token = postfix.front();
-		
 
 		if (token == "+" || token == "-" || token == "*" || token == "/") {
+			std::cout << "Operator (" << token << ") pop 2 operands to perform calculation." << "\n";
+
 			double operand2 = std::stod(numbers.top());
 			numbers.pop();
 			double operand1 = std::stod(numbers.top());
@@ -119,18 +146,14 @@ int main()
 			double result = performCalculation(operand1, operand2, token);
 			numbers.push(std::to_string(result));
 
-			/*
-			* For Debugging
-			* 
-			std::cout << operand1 << " " << token << " " << operand2 << " = " << result << "\n";
-			std::cout << "Result After Parsing: " << numbers.top() << "\n\n";
-			*/
-		}
+			std::cout << operand1 << " " << token << " " << operand2 << " = " << result << "\n";		}
 		else {
+			std::cout << "Operand (" << token << ") push to the numbers stack" << "\n";
 			numbers.push(token);
 		}
-		postfix.pop();
+		postfix.pop();	
 	}
 
-	std::cout << "Result: " << numbers.top() << "\n\n";
+	std::cout << "\nFinal Result: " << numbers.top() << "\n\n";
+	numbers.pop();
 }
