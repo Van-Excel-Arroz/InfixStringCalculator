@@ -31,11 +31,16 @@ double performCalculation(double operand1, double operand2, std::string _operato
 			throw std::invalid_argument("Can not divide by 0.");
 		}
 		return operand1 / operand2;
-	} 
+	}
+	else {
+		throw std::invalid_argument("Invalid operator !" + _operator);
+	}
 }
 
 int getPrecedenceOrder(char _operator) {
 	switch (_operator) {
+	case '(': 
+		return 0;
 	case '-':
 		return 1;
 	case '+':
@@ -44,8 +49,7 @@ int getPrecedenceOrder(char _operator) {
 		return 2;
 	case '/':
 		return 2;
-	case '(': 
-		return 3;
+	default: throw std::invalid_argument("Operator have no precedence. " + _operator); break;
 	}
 }
 
@@ -53,7 +57,7 @@ int main()
 {
 	std::queue<std::string> postfix;
 	std::stack<char> operators;
-	std::string infix = "2 (6 - 4 * 1) / 2";
+	std::string infix = "2 * 3 * 4";
 	std::string currentNumber = "";
 
 	std::cout << "Infix String: " << infix << "\n\n";
@@ -66,8 +70,11 @@ int main()
 			continue;
 		}
 		if (c == '(') {
-			postfix.push(currentNumber);
-			currentNumber = "";
+			if (currentNumber != "") {
+				postfix.push(currentNumber);
+				currentNumber = "";
+			}
+
 			if (!operators.empty() && operators.top() == '*') {
 				operators.push(c);
 			}
@@ -101,11 +108,6 @@ int main()
 				operators.push(currentOperator);
 			} 
 			else if (getPrecedenceOrder(currentOperator) <= getPrecedenceOrder(operators.top())) {
-				if (operators.top() == '(') {
-					operators.push(currentOperator);
-					continue;
-				}
-
 				std::string parsedOperator;
 				parsedOperator += operators.top();
 				operators.pop();
@@ -118,7 +120,7 @@ int main()
 		}
 	}
 
-	postfix.push(currentNumber);
+	if (currentNumber != "") postfix.push(currentNumber);
 	while (!operators.empty()) {
 		std::string parsedOperator;
 		parsedOperator += operators.top();
@@ -138,15 +140,22 @@ int main()
 		if (token == "+" || token == "-" || token == "*" || token == "/") {
 			std::cout << "Operator (" << token << ") pop 2 operands to perform calculation." << "\n";
 
-			double operand2 = std::stod(numbers.top());
-			numbers.pop();
-			double operand1 = std::stod(numbers.top());
-			numbers.pop();
+			try {
+				if (numbers.size() < 2) throw std::invalid_argument("Invalid Expression");
+				double operand2 = std::stod(numbers.top());
+				numbers.pop();
+				double operand1 = std::stod(numbers.top());
+				numbers.pop();
 
-			double result = performCalculation(operand1, operand2, token);
-			numbers.push(std::to_string(result));
+				double result = performCalculation(operand1, operand2, token);
+				numbers.push(std::to_string(result));
 
-			std::cout << operand1 << " " << token << " " << operand2 << " = " << result << "\n";		}
+				std::cout << operand1 << " " << token << " " << operand2 << " = " << result << "\n";
+			}
+			catch (std::invalid_argument) {
+				std::cout << "Invalid Expression";
+			}
+		}
 		else {
 			std::cout << "Operand (" << token << ") push to the numbers stack" << "\n";
 			numbers.push(token);
