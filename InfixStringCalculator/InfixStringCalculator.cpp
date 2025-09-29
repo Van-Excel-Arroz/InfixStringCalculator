@@ -3,6 +3,7 @@
 #include <stack>
 #include <queue>
 #include <string>
+#include <cmath>
 
 void printPostfixString(std::queue<std::string> postfix) {
 	std::cout << "Postfix String: ";
@@ -32,6 +33,9 @@ double performCalculation(double operand1, double operand2, std::string _operato
 		}
 		return operand1 / operand2;
 	}
+	else if (_operator == "^") {
+		return pow(operand1, operand2);
+	}
 	else {
 		throw std::invalid_argument("Invalid operator !" + _operator);
 	}
@@ -49,15 +53,21 @@ int getPrecedenceOrder(char _operator) {
 		return 2;
 	case '/':
 		return 2;
+	case '^':
+		return 3;
 	default: throw std::invalid_argument("Operator have no precedence. " + _operator); break;
 	}
+}
+
+bool isOperator(char _operator) {
+	return _operator == '+' || _operator == '-' || _operator == '*' || _operator == '/' || _operator == '^';
 }
 
 int main()
 {
 	std::queue<std::string> postfix;
 	std::stack<char> operators;
-	std::string infix = "(2 + 2) / 2";
+	std::string infix = "7 / 3 * 4 * (2^2)";
 	std::string currentNumber = "";
 
 	std::cout << "Infix String: " << infix << "\n\n";
@@ -74,7 +84,7 @@ int main()
 				postfix.push(currentNumber);
 				currentNumber = "";
 			}
-			if (!operators.empty() && operators.top() == '*') {
+			if (!operators.empty()) {
 				operators.push(c);
 			}
 			else {
@@ -95,7 +105,7 @@ int main()
 			}
 			operators.pop(); // remove '(' from operators stack
 		}
-		if (c == '+' || c == '-' || c == '*'|| c == '/') {
+		if (c == '+' || c == '-' || c == '*'|| c == '/' || c == '^') {
 			if (currentNumber != "") {
 				postfix.push(currentNumber);
 				currentNumber = "";
@@ -136,7 +146,7 @@ int main()
 	while (!postfix.empty()) {
 		std::string token = postfix.front();
 
-		if (token == "+" || token == "-" || token == "*" || token == "/") {
+		if (token == "+" || token == "-" || token == "*" || token == "/" || token == "^") {
 			std::cout << "Operator (" << token << ") pop 2 operands to perform calculation." << "\n";
 
 			try {
