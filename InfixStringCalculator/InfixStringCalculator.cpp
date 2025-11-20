@@ -142,6 +142,9 @@ void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) 
 				std::cout << "Operator (" << currentOperator << "): push to the operators stack\n";
 			}
 		}
+		else {
+			throw std::invalid_argument("Invalid Expression");
+		}
 	}
 
 	if (currentNumber != "") {
@@ -206,15 +209,22 @@ int main()
 	do {
 		std::cout << "Enter infix expression: ";
 		std::getline(std::cin, infix);
-		std::queue<std::string> postfix;
-		convertInfixToPostfix(infix, postfix);
-		printPostfixString(postfix);
-		std::string result = evaluatePostfixExpression(postfix);
-		std::cout << "\n\n\nFinal Result: " << result << "\n\n";
+		
+		try {
+			std::queue<std::string> postfix;
+			convertInfixToPostfix(infix, postfix);
+			printPostfixString(postfix);
+			std::string result = evaluatePostfixExpression(postfix);
+			std::cout << "\n\n\nFinal Result: " << result << "\n";
+		}
+		catch (std::invalid_argument) {
+			std::cout << "Invalid Expression";
+		}
 
-		std::cout << "\nCalculate another? (y/n): ";
+		std::cout << "\n\nCalculate another? (y/n): ";
 		std::cin >> choice;
 		std::cin.ignore();
+		std::cout << "\n\n";
 	} while (choice == 'y' || choice == 'Y');
 
 	return 0;
