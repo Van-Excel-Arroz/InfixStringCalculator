@@ -63,14 +63,11 @@ bool isOperator(char _operator) {
 	return _operator == '+' || _operator == '-' || _operator == '*' || _operator == '/' || _operator == '^';
 }
 
-int main()
-{
-	std::queue<std::string> postfix;
+void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) {
 	std::stack<char> operators;
-	std::string infix = "7 / 3 * 4 * (2^2)";
 	std::string currentNumber = "";
 
-	std::cout << "Infix String: " << infix << "\n\n";
+	std::cout << "==== Start of postfix conversion ====\n\n";
 
 	for (char c : infix) {
 		if (c == ' ') continue;
@@ -82,32 +79,46 @@ int main()
 		if (c == '(') {
 			if (currentNumber != "") {
 				postfix.push(currentNumber);
+				std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
 				currentNumber = "";
 			}
 			if (!operators.empty()) {
 				operators.push(c);
+				std::cout << "Operator '" << c << "': push to the operators stack\n";
 			}
 			else {
-				if (!postfix.empty()) operators.push('*');
+				if (!postfix.empty()) {
+					operators.push('*');
+					std::cout << "Operator (*): push to the operators stack (implicit multiplication)\n";
+				}
 				operators.push(c);
+				std::cout << "Operator (" << c << "): push to the operators stackd\n";
 			}
 		}
 		if (c == ')') {
-			postfix.push(currentNumber);
+			if (currentNumber != "") {
+				postfix.push(currentNumber);
+				std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
+			}
 			currentNumber = "";
 			std::string parsedOperator;
-			
+
+			std::cout << "Operator ')': pop from operators stack ";
+
 			while (operators.top() != '(') {
 				parsedOperator += operators.top();
+				std::cout << "(" << parsedOperator << ") ";
 				postfix.push(parsedOperator);
 				operators.pop();
 				parsedOperator = "";
 			}
 			operators.pop(); // remove '(' from operators stack
+			std::cout << "and push to postfix queue, also pop '(' from operators stack\n";
 		}
-		if (c == '+' || c == '-' || c == '*'|| c == '/' || c == '^') {
+		if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
 			if (currentNumber != "") {
 				postfix.push(currentNumber);
+				std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
 				currentNumber = "";
 			}
 
@@ -115,39 +126,49 @@ int main()
 
 			if (operators.empty()) {
 				operators.push(currentOperator);
-			} 
+				std::cout << "Operator (" << currentOperator << "): push to the operators stack\n";
+			}
 			else if (getPrecedenceOrder(currentOperator) <= getPrecedenceOrder(operators.top())) {
 				std::string parsedOperator;
 				parsedOperator += operators.top();
+				std::cout << "Operator (" << currentOperator << "): pop (" << parsedOperator << ") from operators stack and push it to postfix queue (precedence rule), ";
 				operators.pop();
 				postfix.push(parsedOperator);
 				operators.push(currentOperator);
+				std::cout << "then push (" << currentOperator << ") to the operators stack\n";
 			}
 			else if (getPrecedenceOrder(currentOperator) > getPrecedenceOrder(operators.top())) {
 				operators.push(currentOperator);
+				std::cout << "Operator (" << currentOperator << "): push to the operators stack\n";
 			}
 		}
 	}
 
-	if (currentNumber != "") postfix.push(currentNumber);
+	if (currentNumber != "") {
+		postfix.push(currentNumber);
+		std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
+	}
+
 	while (!operators.empty()) {
 		std::string parsedOperator;
 		parsedOperator += operators.top();
+		std::cout << "Operator (" << parsedOperator << "): pop from operators stack and push to postfix queue (remaining operators)\n";
 		operators.pop();
 		postfix.push(parsedOperator);
 	}
 
-	printPostfixString(postfix);
+	std::cout << "\n==== End of postfix conversion ======\n\n";
+}
 
-
+std::string evaluatePostfixExpression(std::queue<std::string>& postfix) {
 	std::stack<std::string> numbers;
-	std::cout << "Evaluating the postfix string calculation: \n\n";
+	std::cout << "==== Start of postfix string calculation ==== \n\n";
 
 	while (!postfix.empty()) {
 		std::string token = postfix.front();
 
 		if (token == "+" || token == "-" || token == "*" || token == "/" || token == "^") {
-			std::cout << "Operator (" << token << ") pop 2 operands to perform calculation." << "\n";
+			std::cout << "Operator (" << token << "): pop 2 operands to perform calculation: ";
 
 			try {
 				if (numbers.size() < 2) throw std::invalid_argument("Invalid Expression");
@@ -166,12 +187,26 @@ int main()
 			}
 		}
 		else {
-			std::cout << "Operand (" << token << ") push to the numbers stack" << "\n";
+			std::cout << "Operand  (" << token << "): push to the numbers stack" << "\n";
 			numbers.push(token);
 		}
-		postfix.pop();	
+		postfix.pop();
 	}
-
-	std::cout << "\nFinal Result: " << numbers.top() << "\n\n";
+	std::cout << "\n==== End of postfix string calculation ======";
+	return numbers.top();
 	numbers.pop();
+}
+
+
+int main()
+{
+	std::string infix = "5 * (2 - 3 * 2) + 4";
+	std::cout << "Infix string: " << infix << "\n\n";
+
+	std::queue<std::string> postfix;
+
+	convertInfixToPostfix(infix, postfix);
+	printPostfixString(postfix);
+	std::string result = evaluatePostfixExpression(postfix);
+	std::cout << "\n\n\nFinal Result: " << result << "\n\n";
 }
