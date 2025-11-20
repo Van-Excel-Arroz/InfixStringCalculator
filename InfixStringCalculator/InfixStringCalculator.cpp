@@ -67,7 +67,7 @@ void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) 
 	std::stack<char> operators;
 	std::string currentNumber = "";
 
-	std::cout << "==== Start of postfix conversion ====\n\n";
+	std::cout << "\n\n==== Start of postfix conversion ====\n\n";
 
 	for (char c : infix) {
 		if (c == ' ') continue;
@@ -200,13 +200,22 @@ std::string evaluatePostfixExpression(std::queue<std::string>& postfix) {
 
 int main()
 {
-	std::string infix = "5 * (2 - 3 * 2) + 4";
-	std::cout << "Infix string: " << infix << "\n\n";
+	std::string infix;
+	char choice;
+	
+	do {
+		std::cout << "Enter infix expression: ";
+		std::getline(std::cin, infix);
+		std::queue<std::string> postfix;
+		convertInfixToPostfix(infix, postfix);
+		printPostfixString(postfix);
+		std::string result = evaluatePostfixExpression(postfix);
+		std::cout << "\n\n\nFinal Result: " << result << "\n\n";
 
-	std::queue<std::string> postfix;
+		std::cout << "\nCalculate another? (y/n): ";
+		std::cin >> choice;
+		std::cin.ignore();
+	} while (choice == 'y' || choice == 'Y');
 
-	convertInfixToPostfix(infix, postfix);
-	printPostfixString(postfix);
-	std::string result = evaluatePostfixExpression(postfix);
-	std::cout << "\n\n\nFinal Result: " << result << "\n\n";
+	return 0;
 }
