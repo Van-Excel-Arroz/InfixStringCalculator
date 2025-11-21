@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <stack>
 #include <queue>
@@ -7,7 +6,7 @@
 
 void printPostfixString(std::queue<std::string> postfix) {
 	std::cout << "Postfix String: ";
-	
+
 	while (!postfix.empty()) {
 		std::cout << postfix.front() << " ";
 		postfix.pop();
@@ -16,17 +15,16 @@ void printPostfixString(std::queue<std::string> postfix) {
 	std::cout << "\n\n";
 }
 
-
 double performCalculation(double operand1, double operand2, std::string _operator) {
 	if (_operator == "+") {
 		return operand1 + operand2;
 	}
 	else if (_operator == "-") {
 		return operand1 - operand2;
-	} 
+	}
 	else if (_operator == "*") {
 		return operand1 * operand2;
-	} 
+	}
 	else if (_operator == "/") {
 		if (operand2 == 0) {
 			throw std::invalid_argument("Can not divide by 0.");
@@ -43,7 +41,7 @@ double performCalculation(double operand1, double operand2, std::string _operato
 
 int getPrecedenceOrder(char _operator) {
 	switch (_operator) {
-	case '(': 
+	case '(':
 		return 0;
 	case '-':
 		return 1;
@@ -76,10 +74,10 @@ void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) 
 			currentNumber += c;
 			continue;
 		}
-		if (c == '(') {
+		else if (c == '(') {
 			if (currentNumber != "") {
 				postfix.push(currentNumber);
-				std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
+				std::cout << "Operand  (" << currentNumber << "): enqueue to the postfix queue\n";
 				currentNumber = "";
 			}
 			if (!operators.empty()) {
@@ -92,33 +90,36 @@ void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) 
 					std::cout << "Operator (*): push to the operators stack (implicit multiplication)\n";
 				}
 				operators.push(c);
-				std::cout << "Operator (" << c << "): push to the operators stackd\n";
+				std::cout << "Operator '" << c << "': push to the operators stack\n";
 			}
 		}
-		if (c == ')') {
+		else if (c == ')') {
 			if (currentNumber != "") {
 				postfix.push(currentNumber);
-				std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
+				std::cout << "Operand  (" << currentNumber << "): enqueue to the postfix queue\n";
 			}
 			currentNumber = "";
 			std::string parsedOperator;
 
 			std::cout << "Operator ')': pop from operators stack ";
 
-			while (operators.top() != '(') {
+			while (!operators.empty() && operators.top() != '(') {
 				parsedOperator += operators.top();
 				std::cout << "(" << parsedOperator << ") ";
 				postfix.push(parsedOperator);
 				operators.pop();
 				parsedOperator = "";
 			}
-			operators.pop(); // remove '(' from operators stack
-			std::cout << "and push to postfix queue, also pop '(' from operators stack\n";
+
+			if (!operators.empty()) {
+				operators.pop();
+				std::cout << "and enqueue to postfix queue, also pop '(' from operators stack\n";
+			}
 		}
-		if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
+		else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
 			if (currentNumber != "") {
 				postfix.push(currentNumber);
-				std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
+				std::cout << "Operand  (" << currentNumber << "): enqueue to the postfix queue\n";
 				currentNumber = "";
 			}
 
@@ -131,7 +132,7 @@ void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) 
 			else if (getPrecedenceOrder(currentOperator) <= getPrecedenceOrder(operators.top())) {
 				std::string parsedOperator;
 				parsedOperator += operators.top();
-				std::cout << "Operator (" << currentOperator << "): pop (" << parsedOperator << ") from operators stack and push it to postfix queue (precedence rule), ";
+				std::cout << "Operator (" << currentOperator << "): pop (" << parsedOperator << ") from operators stack and enqueue it to postfix queue (precedence rule), ";
 				operators.pop();
 				postfix.push(parsedOperator);
 				operators.push(currentOperator);
@@ -149,13 +150,13 @@ void convertInfixToPostfix(std::string infix, std::queue<std::string>& postfix) 
 
 	if (currentNumber != "") {
 		postfix.push(currentNumber);
-		std::cout << "Operand  (" << currentNumber << "): push to the postfix queue\n";
+		std::cout << "Operand  (" << currentNumber << "): enqueue to the postfix queue\n";
 	}
 
 	while (!operators.empty()) {
 		std::string parsedOperator;
 		parsedOperator += operators.top();
-		std::cout << "Operator (" << parsedOperator << "): pop from operators stack and push to postfix queue (remaining operators)\n";
+		std::cout << "Operator (" << parsedOperator << "): pop from operators stack and enqueue to postfix queue (remaining operators)\n";
 		operators.pop();
 		postfix.push(parsedOperator);
 	}
@@ -196,8 +197,11 @@ std::string evaluatePostfixExpression(std::queue<std::string>& postfix) {
 		postfix.pop();
 	}
 	std::cout << "\n==== End of postfix string calculation ======";
-	return numbers.top();
-	numbers.pop();
+
+	if (!numbers.empty()) {
+		return numbers.top();
+	}
+	return "0";
 }
 
 
@@ -205,11 +209,11 @@ int main()
 {
 	std::string infix;
 	char choice;
-	
+
 	do {
 		std::cout << "Enter infix expression: ";
 		std::getline(std::cin, infix);
-		
+
 		try {
 			std::queue<std::string> postfix;
 			convertInfixToPostfix(infix, postfix);
